@@ -1,0 +1,6 @@
+{
+  "rewrites": [{
+    "source": "/",
+    "destination": "/noodles_black_music_birthday.html"
+  }]
+}
