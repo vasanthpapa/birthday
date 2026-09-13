@@ -283,7 +283,7 @@
 </head>
 <body>
 <div id="app">
-  <audio id="music" loop preload="auto">
+  <audio id="music" loop preload="auto" autoplay>
     <source src="music.mp3" type="audio/mpeg">
   </audio>
   <div class="bg-hearts" id="hearts"></div>
@@ -415,13 +415,17 @@
   document.querySelectorAll('.personName').forEach(e=>e.textContent=YOUR_NAME);
 
   const music=document.getElementById('music');
+  const soundBtn=document.getElementById('soundBtn');
+  function playMusic(){
+    music.play().catch(()=>{});
+  }
   let soundOn=true;
-  document.getElementById('soundBtn').onclick=()=>{
+  soundBtn.onclick=()=>{
     soundOn=!soundOn;
-    if(soundOn){music.play().catch(()=>{});soundBtn.textContent='🔊'}
+    if(soundOn){playMusic();soundBtn.textContent='🔊'}
     else{music.pause();soundBtn.textContent='🔇'}
   };
-  document.body.addEventListener('pointerdown',()=>{ if(soundOn && music.paused) music.play().catch(()=>{}); },{once:true});
+  document.body.addEventListener('pointerdown',()=>{ if(soundOn && music.paused) playMusic(); });
 
   let currentPage=1;
   const backBtn=document.getElementById('backBtn');
