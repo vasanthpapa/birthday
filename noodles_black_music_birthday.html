@@ -63,6 +63,16 @@
   .btn:active{transform:scale(.80)}
   .btn.light{background:var(--surface);color:var(--gold);box-shadow:0 5px 14px #00000055}
   .bottom-btn{width:92%;margin-top:auto;border-radius:28px}
+  /* birthday time reveal gate */
+  #timeGate{justify-content:center;text-align:center;gap:18px;background:radial-gradient(circle at 50% 35%,#302514 0%,#11100c 52%,#090909 100%);z-index:20}
+  #timeGate .gate-label{font-family:Georgia,serif;font-style:italic;color:var(--muted);font-size:15px}
+  #timeGate .gate-title{font-family:"Brush Script MT","Segoe Script",cursive;color:var(--gold-light);font-size:34px;line-height:1.2}
+  #timeGate .countdown{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;width:100%;max-width:370px;margin-top:8px}
+  #timeGate .time-box{padding:15px 6px 12px;border:1px solid rgba(217,180,102,.45);border-radius:15px;background:linear-gradient(145deg,rgba(31,26,17,.94),rgba(9,9,9,.9));box-shadow:0 9px 22px rgba(0,0,0,.3)}
+  #timeGate .time-num{display:block;color:var(--gold-light);font:700 28px Georgia,serif}
+  #timeGate .time-unit{display:block;margin-top:5px;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:1px}
+  #timeGate .gate-date{color:var(--gold);font:700 14px Georgia,serif;margin-top:8px}
+  #timeGate .gate-note{max-width:330px;color:#d7bd91;font:italic 13px/1.6 Georgia,serif}
   /* intro */
   #p1{justify-content:center;gap:20px}
   #p1>:not(.tiny-flags){position:relative;z-index:1}
@@ -291,7 +301,20 @@
   <button class="back-btn hidden" id="backBtn" type="button" onclick="previousPage()">‹ Back</button>
   <div class="top-chip" id="soundBtn" title="Music">🔊</div>
 
-  <section class="page active" id="p1">
+  <section class="page active" id="timeGate">
+    <div class="gate-label">A little surprise is waiting for you ✨</div>
+    <div class="gate-title">Birthday surprise reveals in</div>
+    <div class="countdown" aria-live="polite">
+      <div class="time-box"><span class="time-num" id="cdDays">00</span><span class="time-unit">Days</span></div>
+      <div class="time-box"><span class="time-num" id="cdHours">00</span><span class="time-unit">Hours</span></div>
+      <div class="time-box"><span class="time-num" id="cdMinutes">00</span><span class="time-unit">Minutes</span></div>
+      <div class="time-box"><span class="time-num" id="cdSeconds">00</span><span class="time-unit">Seconds</span></div>
+    </div>
+    <div class="gate-date" id="gateDate"></div>
+    <div class="gate-note">Until the birthday begins, this countdown will be the starting screen. At the exact reveal time, the birthday page opens automatically. 🎂</div>
+  </section>
+
+  <section class="page" id="p1">
     <div class="big-script">Happy Birthday<br><span class="personName">Healer🖤</span></div>
     <img class="cake-scene" src="teddy.png" alt="Birthday teddy bears with a cake">
     <div class="question">Are you excited for what's next?</div>
@@ -413,6 +436,33 @@
   const YOUR_NAME = "Healer🖤";
 
   document.querySelectorAll('.personName').forEach(e=>e.textContent=YOUR_NAME);
+
+  // Birthday reveal: September 17, 2026 at midnight (India time).
+  const BIRTHDAY_REVEAL = "2026-09-17T00:00:00+05:30";
+
+  const revealAt = new Date(BIRTHDAY_REVEAL);
+  const timeGate = document.getElementById('timeGate');
+  let revealTimer;
+  function padTime(n){return String(Math.max(0,n)).padStart(2,'0')}
+  function openBirthday(){
+    clearInterval(revealTimer);
+    timeGate.classList.remove('active');
+    document.getElementById('p1').classList.add('active');
+  }
+  function updateRevealCountdown(){
+    const diff=revealAt.getTime()-Date.now();
+    if(!Number.isFinite(revealAt.getTime()) || diff<=0){openBirthday();return}
+    const total=Math.floor(diff/1000);
+    document.getElementById('cdDays').textContent=padTime(Math.floor(total/86400));
+    document.getElementById('cdHours').textContent=padTime(Math.floor((total%86400)/3600));
+    document.getElementById('cdMinutes').textContent=padTime(Math.floor((total%3600)/60));
+    document.getElementById('cdSeconds').textContent=padTime(total%60);
+  }
+  document.getElementById('gateDate').textContent = Number.isFinite(revealAt.getTime())
+    ? revealAt.toLocaleString([], {dateStyle:'long',timeStyle:'short'})
+    : 'Set BIRTHDAY_REVEAL in the code';
+  updateRevealCountdown();
+  revealTimer=setInterval(updateRevealCountdown,250);
 
   const music=document.getElementById('music');
   const soundBtn=document.getElementById('soundBtn');
