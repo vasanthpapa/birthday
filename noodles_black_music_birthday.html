@@ -279,13 +279,11 @@
   .last-one{margin-top:18px;padding:12px 30px;border:1px solid var(--gold);border-radius:24px;background:transparent;color:var(--gold-light);font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 0 16px rgba(217,180,102,.16)}
   .credits-screen{position:absolute;inset:0;z-index:50;display:grid;place-items:center;background:#000;color:var(--gold-light);opacity:0;visibility:hidden;pointer-events:none;overflow:hidden}
   .credits-screen.show{opacity:1;visibility:visible;pointer-events:auto}
-  .credits-screen::before{content:"";position:absolute;inset:0;background:url('3.png') center/cover no-repeat;opacity:.22;pointer-events:none}
-  .credits-roll{position:absolute;top:0;left:6%;z-index:1;width:88%;text-align:center;animation:creditsRoll 32s linear forwards}
+  .credits-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:.45;pointer-events:none}
+  .credits-roll{position:absolute;top:0;left:6%;z-index:1;width:88%;text-align:center;text-shadow:0 2px 6px #000,0 0 12px #000;will-change:transform}
   .credits-roll h2{margin-bottom:28px;color:var(--gold);font-family:Georgia,serif;font-size:25px;letter-spacing:1px}
   .credit-line{margin:0 0 24px;font-family:Georgia,serif;font-size:18px;line-height:1.35}
   .credit-line strong{display:block;margin-bottom:5px;color:var(--gold);font-size:12px;letter-spacing:1px;text-transform:uppercase}
-  @keyframes creditsRoll{from{transform:translateY(var(--credits-height,100vh))}to{transform:translateY(-100%)}}
-  @media(prefers-reduced-motion:reduce){.credits-roll{animation-duration:1ms}}
   .burst{position:absolute;width:8px;height:14px;border-radius:2px;animation:fall 2.8s linear forwards}
   @keyframes fall{from{transform:translateY(-10vh) rotate(0)}to{transform:translateY(110vh) rotate(620deg)}}
   .hidden{display:none!important}
@@ -398,6 +396,7 @@
   </section>
 
   <div class="credits-screen" id="creditsScreen" role="dialog" aria-label="Happy Birthday in 23 languages" aria-hidden="true">
+    <img class="credits-photo" id="creditsPhoto" src="Ezhil/1.JPG" alt="" aria-hidden="true">
     <div class="credits-roll" id="creditsRoll">
       <h2>Happy Birthday</h2>
       <p class="credit-line"><strong>Tamil</strong>இனிய பிறந்தநாள் வாழ்த்துக்கள் <bdi dir="auto">ஹீலர் 🖤</bdi></p>
@@ -438,8 +437,8 @@
 
   document.querySelectorAll('.personName').forEach(e=>e.textContent=YOUR_NAME);
 
-  // Birthday reveal: September 15, 2026 at 7:00 PM (India time).
-  const BIRTHDAY_REVEAL = "2026-09-15T19:00:00+05:30";
+  // Birthday reveal: September 17, 2026 at 12:00 AM (India time).
+  const BIRTHDAY_REVEAL = "2026-09-17T00:00:00+05:30";
 
   const revealAt = new Date(BIRTHDAY_REVEAL);
   const timeGate = document.getElementById('timeGate');
@@ -797,21 +796,46 @@ Your Best Friend 🖤
     },22);
   }
   function finish(){fullConfetti(130);go(8)}
+  const creditsPhotos=Array.from({length:57},(_,index)=>`Ezhil/${index+1}.JPG`);
+  const creditsPhotoDuration=1500;
+  let creditsFrame;
   function showCredits(){
     const screen=document.getElementById('creditsScreen');
     const roll=document.getElementById('creditsRoll');
+    const photo=document.getElementById('creditsPhoto');
+    const duration=creditsPhotos.length*creditsPhotoDuration;
+    cancelAnimationFrame(creditsFrame);
+    photo.src=creditsPhotos[0];
+    let photoIndex=-1;
+    let startedAt;
     screen.classList.add('show');
     screen.setAttribute('aria-hidden','false');
-    roll.style.setProperty('--credits-height',screen.clientHeight+'px');
-    roll.onanimationend=event=>{
-      if(event.animationName!=='creditsRoll')return;
-      screen.classList.remove('show');
-      screen.setAttribute('aria-hidden','true');
-      document.querySelector('#p8 .last-one').focus();
-    };
-    roll.style.animation='none';
-    void roll.offsetWidth;
-    roll.style.animation='';
+    roll.style.transform=`translateY(${screen.clientHeight}px)`;
+    function updateCredits(now){
+      if(startedAt===undefined)startedAt=now;
+      const elapsed=Math.min(now-startedAt,duration);
+      const index=Math.min(Math.floor(elapsed/creditsPhotoDuration),creditsPhotos.length-1);
+      if(index!==photoIndex){
+        photoIndex=index;
+        photo.src=creditsPhotos[index];
+        // Warm the next photo while the current one is displayed.
+        if(index+1<creditsPhotos.length){
+          const nextPhoto=new Image();
+          nextPhoto.src=creditsPhotos[index+1];
+        }
+      }
+      // One clock keeps the last photo and the final words in sync.
+      const progress=elapsed/duration;
+      roll.style.transform=`translateY(calc(${screen.clientHeight*(1-progress)}px - ${progress*100}%))`;
+      if(elapsed<duration){
+        creditsFrame=requestAnimationFrame(updateCredits);
+      }else{
+        screen.classList.remove('show');
+        screen.setAttribute('aria-hidden','true');
+        document.querySelector('#p8 .last-one').focus();
+      }
+    }
+    creditsFrame=requestAnimationFrame(updateCredits);
   }
 
   function miniConfetti(x,y){
