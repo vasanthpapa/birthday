@@ -292,7 +292,7 @@
 </head>
 <body>
 <div id="app">
-  <audio id="music" loop preload="auto" autoplay>
+  <audio id="music" loop preload="auto">
     <source src="music.mp3" type="audio/mpeg">
   </audio>
   <div class="bg-hearts" id="hearts"></div>
@@ -443,11 +443,15 @@
   const revealAt = new Date(BIRTHDAY_REVEAL);
   const timeGate = document.getElementById('timeGate');
   let revealTimer;
+  let birthdayRevealed=false;
   function padTime(n){return String(Math.max(0,n)).padStart(2,'0')}
   function openBirthday(){
     clearInterval(revealTimer);
+    if(birthdayRevealed)return;
+    birthdayRevealed=true;
     timeGate.classList.remove('active');
     document.getElementById('p1').classList.add('active');
+    playMusic();
   }
   function updateRevealCountdown(){
     const diff=revealAt.getTime()-Date.now();
@@ -461,12 +465,11 @@
   document.getElementById('gateDate').textContent = Number.isFinite(revealAt.getTime())
     ? revealAt.toLocaleString([], {dateStyle:'long',timeStyle:'short'})
     : 'Set BIRTHDAY_REVEAL in the code';
-  updateRevealCountdown();
-  revealTimer=setInterval(updateRevealCountdown,250);
 
   const music=document.getElementById('music');
   const soundBtn=document.getElementById('soundBtn');
   function playMusic(){
+    if(!birthdayRevealed || !soundOn)return;
     music.play().catch(()=>{});
   }
   let soundOn=true;
@@ -476,6 +479,8 @@
     else{music.pause();soundBtn.textContent='🔇'}
   };
   document.body.addEventListener('pointerdown',()=>{ if(soundOn && music.paused) playMusic(); });
+  updateRevealCountdown();
+  if(!birthdayRevealed)revealTimer=setInterval(updateRevealCountdown,250);
 
   let currentPage=1;
   const backBtn=document.getElementById('backBtn');
