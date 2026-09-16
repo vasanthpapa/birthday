@@ -280,11 +280,11 @@
   .credits-screen{position:absolute;inset:0;z-index:50;display:grid;place-items:center;background:#000;color:var(--gold-light);opacity:0;visibility:hidden;pointer-events:none;overflow:hidden}
   .credits-screen.show{opacity:1;visibility:visible;pointer-events:auto}
   .credits-screen::before{content:"";position:absolute;inset:0;background:url('3.png') center/cover no-repeat;opacity:.22;pointer-events:none}
-  .credits-roll{position:relative;z-index:1;width:88%;padding:100vh 0;text-align:center;animation:creditsRoll 32s linear forwards}
+  .credits-roll{position:absolute;top:0;left:6%;z-index:1;width:88%;text-align:center;animation:creditsRoll 32s linear forwards}
   .credits-roll h2{margin-bottom:28px;color:var(--gold);font-family:Georgia,serif;font-size:25px;letter-spacing:1px}
   .credit-line{margin:0 0 24px;font-family:Georgia,serif;font-size:18px;line-height:1.35}
   .credit-line strong{display:block;margin-bottom:5px;color:var(--gold);font-size:12px;letter-spacing:1px;text-transform:uppercase}
-  @keyframes creditsRoll{from{transform:translateY(0)}to{transform:translateY(-100%)}}
+  @keyframes creditsRoll{from{transform:translateY(var(--credits-height,100vh))}to{transform:translateY(-100%)}}
   @media(prefers-reduced-motion:reduce){.credits-roll{animation-duration:1ms}}
   .burst{position:absolute;width:8px;height:14px;border-radius:2px;animation:fall 2.8s linear forwards}
   @keyframes fall{from{transform:translateY(-10vh) rotate(0)}to{transform:translateY(110vh) rotate(620deg)}}
@@ -802,6 +802,13 @@ Your Best Friend 🖤
     const roll=document.getElementById('creditsRoll');
     screen.classList.add('show');
     screen.setAttribute('aria-hidden','false');
+    roll.style.setProperty('--credits-height',screen.clientHeight+'px');
+    roll.onanimationend=event=>{
+      if(event.animationName!=='creditsRoll')return;
+      screen.classList.remove('show');
+      screen.setAttribute('aria-hidden','true');
+      document.querySelector('#p8 .last-one').focus();
+    };
     roll.style.animation='none';
     void roll.offsetWidth;
     roll.style.animation='';
