@@ -219,9 +219,9 @@
   #p5.moments-complete .moments-hint,#p5.moments-complete h2{visibility:hidden}
   #p5 .moments-continue{position:relative;z-index:2}
   @media(prefers-reduced-motion:reduce){.moments-reveal{transition:none;transform:none}}
-  .moment-card{position:absolute;inset:0;background:var(--surface);padding:11px 11px 7px;border-radius:20px;box-shadow:0 14px 32px rgba(0,0,0,.28);transform-origin:50% 90%;transition:transform .35s ease,opacity .35s ease;cursor:grab;overflow:hidden}
-  .moment-card img{display:block;width:100%;height:calc(100% - 55px);border-radius:13px;object-fit:cover;pointer-events:none}
-  .moment-caption{height:55px;display:grid;place-items:center;color:var(--gold);font-family:Georgia,"Times New Roman",serif;font-size:21px;font-weight:700;text-align:center}
+  .moment-card{position:absolute;left:0;top:0;background:#fff;padding:11px 11px 7px;border-radius:20px;box-shadow:0 14px 32px rgba(0,0,0,.28);transform-origin:50% 90%;transition:transform .35s ease,opacity .35s ease;cursor:grab;overflow:hidden}
+  .moment-card img{display:block;width:100%;height:calc(100% - 55px);border-radius:13px;object-fit:contain;pointer-events:none}
+  .moment-caption{height:55px;display:grid;place-items:center;color:#71521f;font-family:Georgia,"Times New Roman",serif;font-size:clamp(13px,3.8vw,18px);font-weight:700;text-align:center}
   .moment-card.dragging{transition:none;cursor:grabbing}
   .moments-continue{opacity:0;visibility:hidden;transform:translateY(10px);pointer-events:none;transition:opacity .5s,transform .5s,visibility .5s}
   .moments-continue.ready{opacity:1;visibility:visible;transform:none;pointer-events:auto}
@@ -564,8 +564,8 @@
   function setupMomentsGallery(){
     const stack=document.getElementById('photoStack');
     const continueButton=document.querySelector('.moments-continue');
-    const photos=['photo1.jpg','photo2.jpg','photo3.jpg','photo4.jpg'];
-    const captions=['Happy Birthday! 🎂','Celebrating you 🎉','Beautiful memories 💕','Always special ✨'];
+    const photos=['1.png','2.png','3.png','4.png','5.png','6.png'];
+    const captions=['Happy Birthday! 🎂','Celebrating you 🎉','Beautiful memories 💕','Always special ✨','Your lovely smile 💖','Forever treasured 🖤'];
     stack.replaceChildren();
     document.getElementById('p5').classList.remove('moments-complete');
     document.getElementById('momentsReveal').setAttribute('aria-hidden','true');
@@ -577,11 +577,26 @@
       card.style.zIndex=String(photos.length-index);
       card.style.transform=`translateY(${index*7}px) scale(${1-index*.025}) rotate(${index%2?1.5:-1.5}deg)`;
       card.innerHTML=`<img src="${src}" alt="Sweet moment ${index+1}"><div class="moment-caption">${captions[index]}</div>`;
+      card.querySelector('img').onload=resizeMomentCards;
       card.querySelector('img').onerror=function(){this.onerror=null;this.src='images.jpg'};
       stack.appendChild(card);
     });
     activateTopMomentCard();
   }
+
+  function resizeMomentCards(){
+    const stack=document.getElementById('photoStack');
+    stack.querySelectorAll('.moment-card').forEach(card=>{
+      const photo=card.querySelector('img');
+      if(!photo.naturalWidth)return;
+      const ratio=photo.naturalWidth/photo.naturalHeight;
+      const imageHeight=Math.max(1,Math.min(stack.clientHeight-73,(stack.clientWidth-22)/ratio));
+      const width=imageHeight*ratio+22;
+      const height=imageHeight+73;
+      Object.assign(card.style,{width:`${width}px`,height:`${height}px`,left:`${(stack.clientWidth-width)/2}px`,top:`${(stack.clientHeight-height)/2}px`});
+    });
+  }
+  new ResizeObserver(resizeMomentCards).observe(document.getElementById('photoStack'));
 
   function activateTopMomentCard(){
     const stack=document.getElementById('photoStack');
